@@ -1,19 +1,27 @@
-name: CI
+name: Compile with SourceMod
 
-on: push
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sm_version: ['1.8', '1.9', '1.10', '1.11']
+
     steps:
-    - uses: actions/checkout@v1.0.0
-    - name: Download latest sourcemod
-      run: |
-        curl "https://sm.alliedmods.net/smdrop/1.9/$(curl https://sm.alliedmods.net/smdrop/1.9/sourcemod-latest-linux)" -o sourcemod.tar.gz
-        tar -xvzf sourcemod.tar.gz
-        rm sourcemod.tar.gz
-    - name: Compile code
-      working-directory: addons/sourcemod/scripting
-      run: |
-        chmod +x compile.sh
-        ./compile.sh ot_ht_duration.sp
+      - uses: actions/checkout@v1
+
+      - name: Setup Environment
+        run: |
+          SOURCEMOD_PATH=$GITHUB_WORKSPACE/addons/sourcemod
+          echo "SOURCEMOD_PATH=$SOURCEMOD_PATH" >> $GITHUB_ENV
+          echo "SCRIPTS_PATH=$SOURCEMOD_PATH/scripting" >> $GITHUB_ENV
+
+      - name: Setup SourcePawn Compiler
+        uses: rumblefrog/setup-sp@master
+        with:
+          version: ${{ matrix.sm_version }}
+
+      - name: Compile Plugin
+        run: spcomp $SCRIPTS_PATH/ot_ht_duration.sp -i$SCRIPTS_PATH/include -O2 -t4 -v2
