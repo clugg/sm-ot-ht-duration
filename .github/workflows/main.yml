@@ -25,3 +25,9 @@ jobs:
 
       - name: Compile Plugin
         run: spcomp $SCRIPTS_PATH/ot_ht_duration.sp -i$SCRIPTS_PATH/include -O2 -t4 -v2
+
+      - name: Upload Compiled Plugin
+        uses: actions/upload-artifact@v4
+        with:
+          name: ot_ht_duration_sm${{ matrix.sm_version }}
+          path: ot_ht_duration.smx
